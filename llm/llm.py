@@ -11,14 +11,16 @@ def get_ai_response(query, chunks, mode="demo"):
     if not key:
         raise ValueError("Не задан GEMINI_API_KEY")
     from google import genai
+    from google.genai import types
+
     name = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
     prompt = build_prompt(query, chunks)
-    with genai.Client(api_key=key) as client:
+
+    with genai.Client(
+            api_key=key,
+            http_options=types.HttpOptions(timeout=60_000),
+    ) as client:
         response = client.models.generate_content(
             model=name,
             contents=prompt,
         )
-    answer = response.text
-    if not answer or not answer.strip():
-        raise RuntimeError("Gemini не вернул текстовый ответ")
-    return answer.strip()
